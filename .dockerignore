@@ -1,0 +1,13 @@
+.env
+.git
+**/__pycache__
+**/node_modules
+debug/
+ppt/
+notebooks/
+*.zip
+.venv/
+**/.pytest_cache
+**/.ruff_cache
+samples/
+docs/benchmark_out/

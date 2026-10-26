@@ -1,0 +1,43 @@
+# Segredos
+.env
+!.env.example
+*.key
+*.crt
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+frontend-react/build/
+frontend-react/dist/
+
+# Dados locais: projetos (documentos, índices, artigos), testes e pasta de estudo
+projects/
+tests/
+src/projects/
+debug/
+ppt/
+*.zip
+data/
+esdata/
+
+# IDE / SO
+.vscode/
+.idea/
+.DS_Store
+
+# Credenciais locais
+*.local.md
+
+# Arquivos de teste do benchmark (documentos pessoais)
+samples/
+docs/benchmark_out/
+time_series/

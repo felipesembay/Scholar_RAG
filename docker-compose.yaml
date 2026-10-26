@@ -1,0 +1,78 @@
+services:
+  fastapi:
+    image: scholar-rag-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: scholar_fastapi
+    restart: always
+    env_file:
+      - .env
+    environment:
+      # URL pública da API anunciada ao frontend (/load_enviroment/ -> url_back) e origem CORS
+      - API_URL=http://localhost:8100
+      - PYTHONPATH=/app/src
+      - ES_URL=http://elasticsearch:9200
+      - ALLOWED_ORIGINS=http://localhost:3100
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface   # reusa modelos (bge-m3) já baixados no host
+    working_dir: /app
+    networks:
+      - rag-networks
+    expose:
+      - "8000"
+    ports:
+      - "8100:8000"   # FastAPI no host: 8100
+    command: uvicorn backend.api:app --host 0.0.0.0 --port 8000
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        VITE_API_URL: http://localhost:8100
+    container_name: scholar_frontend
+    restart: always
+    networks:
+      - rag-networks
+    expose:
+      - "80"
+    ports:
+      - "3100:80"   # Frontend no host: 3100
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.5
+    container_name: scholar_elasticsearch
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "127.0.0.1:9200:9200"   # só localhost: dev/scripts no host
+    networks:
+      - rag-networks
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:$${ELASTIC_PASSWORD} http://localhost:9200/_cluster/health | grep -qE '\"status\":\"(green|yellow)\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+networks:
+  rag-networks:
+    driver: bridge
+
+volumes:
+  esdata:

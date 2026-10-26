@@ -1,0 +1,48 @@
+Model:
+  # LLM provider (OpenAI-compatible): OpenAI, OpenRouter or Ollama — set in .env
+  key: ${LLM_API_KEY}
+  base_url: ${LLM_BASE_URL}
+  model_name: ${LLM_MODEL}
+  # Article writing screen (empty = same as model_name)
+  writing_model: ${LLM_MODEL_WRITING}
+  # Full article review before export (empty = writing_model); use a strong model
+  review_model: ${LLM_MODEL_REVIEW}
+  # Default for new indexes; existing ones keep the model recorded in index_info.json
+  embedding: BAAI/bge-m3
+  # Cross-encoder after hybrid retrieval (empty = disabled); rerank_candidates -> max_docs
+  reranker: BAAI/bge-reranker-v2-m3
+  rerank_candidates: 20
+  max_word_count_kb: 15000
+  # chars; smaller chunks = more precise page citations (tune in RAGAS eval)
+  chunk_size: 1500
+  chunk_overlap: 200
+  max_downloads: 3
+  similarity_search:
+    max_docs: 5
+    threshold_default: 1.1
+    threshold_start: 1.1
+    threshold_max: 1.5
+    threshold_min: 0.8
+
+Ingestion:
+  pdf_engine: pdfplumber   # pdfplumber (rápido) | docling (layout complexo)
+  ocr_lang: por+eng        # Tesseract
+  ocr_min_chars: 50        # páginas com menos texto nativo que isso passam por OCR
+  ocr_dpi: 300
+  enrich_doi: true         # busca título/autores/ano no Crossref quando há DOI
+  max_table_rows: 200      # tabelas maiores (dumps de dados) viram resumo + amostra
+
+Vectorstore:
+  # elasticsearch (hybrid BM25 + kNN) | faiss (legacy / benchmark)
+  backend: elasticsearch
+  es_url: ${ES_URL}
+  es_user: elastic
+  es_password: ${ELASTIC_PASSWORD}
+  index_prefix: scholar
+
+ADMIN:
+  admin: ${ADMIN_PASSWORD}
+  secret: ${ADMIN_SECRET_KEY}
+
+OPTIONS:
+  delete_files: False
